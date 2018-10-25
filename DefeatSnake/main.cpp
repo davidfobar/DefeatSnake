@@ -6,12 +6,12 @@
 
 using namespace std;
 
-MatrixClass X, W1, H, W2, Y, B1, B2, Y2, dJdB1, dJdB2, dJdW1, dJdW2, dJdB1s, dJdB2s, dJdW1s, dJdW2s;
+MatrixClass<double> X, W1, H, W2, Y, B1, B2, Y2, dJdB1, dJdB2, dJdW1, dJdW2, dJdB1s, dJdB2s, dJdW1s, dJdW2s;
 double learningRate;
 
 void init(int inputNeuron, int hiddenNeuron, int outputNeuron, double rate);
 double random(double x);
-MatrixClass computeOutput(vector<double> input);
+MatrixClass<double> computeOutput(vector<double> input);
 double sigmoid(double x);
 void learn(vector<double> expectedOutput);
 double sigmoidePrime(double x);
@@ -19,11 +19,11 @@ double stepFunction(double x);
 void updateMatrix();
 
 const int MINI_BATCH_SIZE = 50;
-const int NUM_EPOCHS = 3;
+const int NUM_EPOCHS = 1;
 
 int main(){
 	MnistDataClass data("train-images.idx3-ubyte", "train-labels.idx1-ubyte");
-	srand(time(NULL));
+	srand(1);
 	init(784, 20, 10, 3.0);
 	for (int m = 0; m < NUM_EPOCHS; m++) {
 		for (int i = 0; i < (data.getNumImages() - 100) / MINI_BATCH_SIZE; i++) { //
@@ -55,15 +55,15 @@ int main(){
 void init(int inputNeuron, int hiddenNeuron, int outputNeuron, double rate) {
 	learningRate = rate;
 
-	W1 = MatrixClass(inputNeuron, hiddenNeuron);
-	W2 = MatrixClass(hiddenNeuron, outputNeuron);
-	B1 = MatrixClass(1, hiddenNeuron);
-	B2 = MatrixClass(1, outputNeuron);
+	W1 = MatrixClass<double>(inputNeuron, hiddenNeuron);
+	W2 = MatrixClass<double>(hiddenNeuron, outputNeuron);
+	B1 = MatrixClass<double>(1, hiddenNeuron);
+	B2 = MatrixClass<double>(1, outputNeuron);
 
-	dJdB1s = MatrixClass(1, hiddenNeuron);
-	dJdB2s = MatrixClass(1, outputNeuron);
-	dJdW2s = MatrixClass(hiddenNeuron, outputNeuron);
-	dJdW1s = MatrixClass(inputNeuron, hiddenNeuron);
+	dJdB1s = MatrixClass<double>(1, hiddenNeuron);
+	dJdB2s = MatrixClass<double>(1, outputNeuron);
+	dJdW2s = MatrixClass<double>(hiddenNeuron, outputNeuron);
+	dJdW1s = MatrixClass<double>(inputNeuron, hiddenNeuron);
 
 	W1 = W1.applyFunction(random);
 	W2 = W2.applyFunction(random);
@@ -75,35 +75,35 @@ double random(double x) {
 	return (double)(rand() % 10000 + 1) / 10000 - 0.5;
 }
 
-MatrixClass computeOutput(vector<double> input) {
-	X = MatrixClass({ input }); // row matrix
-	H = X.dot(W1).add(B1).applyFunction(sigmoid);
-	Y = H.dot(W2).add(B2).applyFunction(sigmoid);
+MatrixClass<double> computeOutput(vector<double> input) {
+	X = MatrixClass<double>({ input }); // row matrix
+	H = (X.dot(W1)+B1).applyFunction(sigmoid);
+	Y = (H.dot(W2)+B2).applyFunction(sigmoid);
 	return Y;
 }
 
 void learn(vector<double> expectedOutput) {
-	Y2 = MatrixClass({ expectedOutput }); // row matrix
+	Y2 = MatrixClass<double>({ expectedOutput }); // row matrix
 
 	// We need to calculate the partial derivative of J, the error, with respect to W1,W2,B1,B2
 
 	// compute gradients
-	dJdB2 = Y.subtract(Y2).multiply(H.dot(W2).add(B2).applyFunction(sigmoidePrime));
-	dJdB1 = dJdB2.dot(W2.transpose()).multiply(X.dot(W1).add(B1).applyFunction(sigmoidePrime));
+	dJdB2 = (Y-Y2) * (H.dot(W2)+B2).applyFunction(sigmoidePrime);
+	dJdB1 = dJdB2.dot(W2.transpose()) * (X.dot(W1)+B1).applyFunction(sigmoidePrime);
 	dJdW2 = H.transpose().dot(dJdB2);
 	dJdW1 = X.transpose().dot(dJdB1);
 
-	dJdB1s = dJdB1s.add(dJdB1);
-	dJdB2s = dJdB2s.add(dJdB2);
-	dJdW1s = dJdW1s.add(dJdW1);
-	dJdW2s = dJdW2s.add(dJdW2);
+	dJdB1s = dJdB1s + dJdB1;
+	dJdB2s = dJdB2s + dJdB2;
+	dJdW1s = dJdW1s + dJdW1;
+	dJdW2s = dJdW2s + dJdW2;
 }
 
 void updateMatrix() {
-	W1 = W1.subtract(dJdW1s.multiply(learningRate / MINI_BATCH_SIZE));
-	W2 = W2.subtract(dJdW2s.multiply(learningRate / MINI_BATCH_SIZE));
-	B1 = B1.subtract(dJdB1s.multiply(learningRate / MINI_BATCH_SIZE));
-	B2 = B2.subtract(dJdB2s.multiply(learningRate / MINI_BATCH_SIZE));
+	W1 = W1 - dJdW1s*(learningRate / MINI_BATCH_SIZE);
+	W2 = W2 - dJdW2s*(learningRate / MINI_BATCH_SIZE);
+	B1 = B1 - dJdB1s*(learningRate / MINI_BATCH_SIZE);
+	B2 = B2 - dJdB2s*(learningRate / MINI_BATCH_SIZE);
 }
 
 double sigmoid(double x) {
@@ -115,10 +115,10 @@ double sigmoidePrime(double x) {
 }
 
 double stepFunction(double x) {
-	if (x > 0.9) {
+	if (x > 0.7) {
 		return 1.0;
 	}
-	if (x < 0.1) {
+	if (x < 0.3) {
 		return 0.0;
 	}
 	return x;

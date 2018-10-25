@@ -73,10 +73,10 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\David.Fobar\source\repos\DefeatSnake\DevIL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\Users\David.Fobar\source\repos\DefeatSnake\DevIL\lib\x86\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -94,12 +94,12 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\David.Fobar\source\repos\DefeatSnake\DevIL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -124,7 +124,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MatrixClass.cpp" />
     <ClCompile Include="MnistDataClass.cpp" />
     <ClCompile Include="NNClass.cpp" />
   </ItemGroup>
@@ -132,6 +131,9 @@
     <ClInclude Include="MatrixClass.h" />
     <ClInclude Include="MnistDataClass.h" />
     <ClInclude Include="NNClass.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MatrixClass.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
