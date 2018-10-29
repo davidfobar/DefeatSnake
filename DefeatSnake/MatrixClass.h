@@ -22,6 +22,7 @@ public:
 	MatrixClass transpose	() const; // transposed matrix
 	MatrixClass applyFunction(double(*function)(double)) const; // to apply a function to every element of the matrix
 
+	int getGreatest1DIndex() const;
 	void print(std::ostream &flux) const; // pretty print of the matrix
 	void clear();
 

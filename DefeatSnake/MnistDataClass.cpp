@@ -1,7 +1,6 @@
 #include "MnistDataClass.h"
 
-MnistDataClass::MnistDataClass()
-{
+MnistDataClass::MnistDataClass(){
 }
 
 int MnistDataClass::getNumImages() {
@@ -22,7 +21,7 @@ MnistDataClass::MnistDataClass(string dataFilename, string answerFilename) {
 
 	if (dataFile.good()) {
 		readHeader(dataFile);
-
+		
 		//set vector size
 		inputData.resize(numImages);
 		
@@ -31,7 +30,7 @@ MnistDataClass::MnistDataClass(string dataFilename, string answerFilename) {
 			for (int j = 0; j < imageRow*imageCol; j++) {
 				if (double(dataFile.get() & 0xff) > 0) inputData[i].push_back(1.0);
 				else inputData[i].push_back(0);
-				;
+				//inputData[i].push_back(double(uint8_t(dataFile.get() & 0xff)));
 			}
 		}
 	}

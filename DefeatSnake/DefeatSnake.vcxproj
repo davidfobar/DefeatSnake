@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\David.Fobar\source\repos\DefeatSnake\DevIL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\Users\David.Fobar\source\repos\DefeatSnake\DevIL\lib\x86\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

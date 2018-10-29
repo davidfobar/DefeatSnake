@@ -3,10 +3,25 @@ template<class T>
 MatrixClass<T>::MatrixClass() {}
 
 template<class T>
+int MatrixClass<T>::getGreatest1DIndex() const {
+	assert(height == 1);
+	double test = 0;
+	int result = 0;
+	for (int i = 0; i < width; i++) {
+		if (array[0][i] > test) {
+			test = array[0][i];
+			result = i;
+		}
+	}
+
+	return result;
+}
+
+template<class T>
 MatrixClass<T>::MatrixClass(int inHeight, int inWidth) {
 	height = inHeight;
 	width = inWidth;
-	array = vector< vector<T> >(inHeight, vector<T>(inWidth));
+	array = vector< vector<T> >(height, vector<T>(width));
 }
 
 template<class T>
@@ -59,7 +74,7 @@ MatrixClass<T> MatrixClass<T>::plus(MatrixClass<T> const &m) const {
 }
 
 template<class T>
-MatrixClass<T> MatrixClass<T>::operator+(MatrixClass const &m) const {
+MatrixClass<T> MatrixClass<T>::operator+(MatrixClass<T> const &m) const {
 	return this->plus(m);
 }
 
@@ -78,7 +93,7 @@ MatrixClass<T> MatrixClass<T>::minus(MatrixClass<T> const &m) const {
 }
 
 template<class T>
-MatrixClass<T> MatrixClass<T>::operator-(MatrixClass const &m) const {
+MatrixClass<T> MatrixClass<T>::operator-(MatrixClass<T> const &m) const {
 	return this->minus(m);
 }
 
