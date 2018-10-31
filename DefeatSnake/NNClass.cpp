@@ -1,102 +1,138 @@
 #include "NNClass.h"
 
 int NNClass::compute(vector<double> input) {
-	inputLayer = MatrixClass<double>({ input });
+	nodeLayer[0] = MatrixClass<double>({ input });
 	
-	//feed forward for first layer
-	hLayer[0] = ((inputLayer.dot(weight[0]) + bias[0]).applyFunction(sigmoid));
-	
-	//feed forward for all hidden layers
-	if (numHiddenLayers > 1) {
-		for (int i = 0; i < numHiddenLayers-1; i++) {
-			hLayer[i + 1] = (hLayer[i].dot(weight[i + 1]) + bias[i + 1]).applyFunction(sigmoid);
-		}
+	for (int i = 1; i < numLayers; i++) {
+		nodeLayer[i] = ((nodeLayer[i-1].dot(weight[i-1]) + bias[i-1]).applyFunction(activationType[i-1]));
 	}
 
-	//feed forward for last layer
-	outputLayer = (hLayer[numHiddenLayers-1].dot(weight[numHiddenLayers]) 
-			+ bias[numHiddenLayers]).applyFunction(sigmoid);
-	
-	//return the node number with the highest activation
-	return outputLayer.getGreatest1DIndex();
+	//return the output node index with the highest activation
+	return nodeLayer[numLayers-1].getGreatest1DIndex();
 }
 
 void NNClass::backPropogate(vector<double> expectedOutput) {
 	MatrixClass<double> expected({ expectedOutput });
 
-	dJdB[numBiases-1] = (outputLayer - expected) * ( (hLayer[numHiddenLayers-1].dot(weight[numWeights-1])) + bias[numBiases-1] ).applyFunction(sigmoidPrime);
-	for (int i = numBiases - 2; i > 0; i--) {
-		dJdB[i] = dJdB[i+1].dot(weight[i+1].transpose()) * (hLayer[i-1].dot(weight[i]) + bias[i]).applyFunction(sigmoidPrime);
-	}
-	dJdB[0] = (dJdB[1].dot(weight[1].transpose())) * (inputLayer.dot(weight[0]) + bias[0]).applyFunction(sigmoidPrime);
+	//for a matrix with 2 hidden layers, i would expect to have 3 bias vectors.
+	//I subtract by one due to the zero based system.
+	int numB = bias.size()-1;
 
-	dJdW[numWeights-1] = (hLayer[numHiddenLayers-1].transpose()).dot(dJdB[numBiases-1]);
-	for (int i = numWeights-1; i > 1; i--) {
-		dJdW[i] = (hLayer[i-1].transpose()).dot(dJdB[i]);
-	}
-	dJdW[0] = inputLayer.transpose().dot(dJdB[0]);
-	
+	//for numB = 2
+	//dJdB[2] =  (nodeLayer[3]      - expected) * ((nodeLayer[2]   .dot(weight[2]))    + bias[2])   .applyFunction(activationTypePrime[3]);
+	dJdB[numB] = (nodeLayer[numB+1] - expected) * ((nodeLayer[numB].dot(weight[numB])) + bias[numB]).applyFunction(activationTypePrime[numB+1]);
 
-	for (int i = 0; i < numBiases; i++) {
+	for (int i = numB-1; i >= 0; i--) {
+		//for numB = 1
+		//dJdB[1] = dJdB[2].dot(weight[2].transpose())   * (nodeLayer[1].dot(weight[1])   + bias[1]).applyFunction(activationTypePrime[2]);
+		dJdB[i] = dJdB[i+1].dot(weight[i+1].transpose()) * (nodeLayer[i].dot(weight[i])   + bias[i]).applyFunction(activationTypePrime[i+1]);
+	}
+
+	for (int i = 0; i < numB; i++) {
+		//compute the change in the weight matrix
+		dJdW[i] = (nodeLayer[i]).transpose().dot(dJdB[i]);
+
+		//add cummulative adjuestments for future updates to the weights and biases.
 		dJdBc[i] = dJdBc[i] + dJdB[i];
-	}
-	
-	for (int i = 0; i < numWeights; i++) {
 		dJdWc[i] = dJdWc[i] + dJdW[i];
-	}
+	}	
 }
 
-void NNClass::updateWeightsAndBiases(int miniBatchSize) {
-	for (int i = 0; i < numWeights; i++) {
-		weight[i] = weight[i] - dJdWc[i] * (learningRate / miniBatchSize);
+void NNClass::updateWeightsAndBiases() {
+	for (int i = 0; i < numLayers-1; i++) {
+		weight[i] = weight[i] - (dJdWc[i] * (learningRate / miniBatchSize) + prev_dJdWc[i] * momentumFactor);
 		dJdWc[i].clear();
 	}
 
-	for (int i = 0; i < numBiases; i++) {
-		bias[i] = bias[i] - dJdBc[i] * (learningRate / miniBatchSize);
+	for (int i = 0; i < numLayers-1; i++) {
+		bias[i] = bias[i] - (dJdBc[i] * (learningRate / miniBatchSize) + prev_dJdBc[i] * momentumFactor);
 		dJdBc[i].clear();
 	}
+
+	prev_dJdBc = dJdBc;
+	prev_dJdWc = dJdWc;
 }
 
 NNClass::NNClass(){}
 
-NNClass::NNClass(int layers, int *nodesInLayer,	double learningRate) {
-	this->learningRate = learningRate;
+void NNClass::setLearningRate(double in) {
+	learningRate = in;
+}
 
-	numWeights = layers - 1;
-	numBiases = layers - 1;
-	numHiddenLayers = layers - 2;
-	numOutputs = nodesInLayer[layers];
-	weight	= new MatrixClass<double>[numWeights];
-	dJdWc	= new MatrixClass<double>[numWeights];
-	dJdW	= new MatrixClass<double>[numWeights];
-	bias	= new MatrixClass<double>[numBiases];
-	dJdBc	= new MatrixClass<double>[numBiases];
-	dJdB	= new MatrixClass<double>[numBiases];
-	hLayer	= new MatrixClass<double>[numHiddenLayers];
+void NNClass::setMiniBatchSize(int in) {
+	miniBatchSize = in;
+}
 
-	for (int i = 0; i < numWeights; i++) {
-		weight[i] = MatrixClass<double>(nodesInLayer[i], nodesInLayer[i+1]);
-		dJdWc[i] = MatrixClass<double>(nodesInLayer[i], nodesInLayer[i+1]);
-		dJdW[i] = MatrixClass<double>(nodesInLayer[i], nodesInLayer[i+1]);
-		weight[i] = weight[i].applyFunction(random);
-		dJdWc[i].clear();
-		dJdW[i].clear();
+void NNClass::enableMomentum(double in) {
+	momentumFactor = in;
+}
+
+NNClass::NNClass(int numInputNodes, int inputNodeType, int numOutputNodes, int outputNodeType) {
+	momentumFactor = 0;
+	learningRate = DEFAULT_LEARNING_RATE;
+
+	nodesInLayer.push_back(numInputNodes);
+	if (inputNodeType == SIGMOID) {
+		activationType.push_back(sigmoid);
+		activationTypePrime.push_back(sigmoidPrime);
+	}
+	else if (inputNodeType == RELU) {
+		activationType.push_back(relu);
+		activationTypePrime.push_back(reluPrime);
 	}
 
-	for (int i = 0; i < numBiases; i++) {
-		bias[i] = MatrixClass<double>(1, nodesInLayer[i+1]);
-		dJdBc[i] = MatrixClass<double>(1, nodesInLayer[i+1]);
-		dJdB[i] = MatrixClass<double>(1, nodesInLayer[i+1]);
-		bias[i] = bias[i].applyFunction(random);
-		dJdBc[i].clear();
-		dJdB[i].clear();
+	nodesInLayer.push_back(numOutputNodes);
+	if (outputNodeType == SIGMOID) {
+		activationType.push_back(sigmoid);
+		activationTypePrime.push_back(sigmoidPrime);
 	}
-	
-	for (int i = 0; i < numHiddenLayers; i++) {
-		hLayer[i] = MatrixClass<double>(1, nodesInLayer[i+1]);
-		hLayer[i].clear();
+	else if (outputNodeType == RELU) {
+		activationType.push_back(relu);
+		activationTypePrime.push_back(reluPrime);
 	}
+
+	numLayers = 2;
+}
+
+void NNClass::addHiddenLayer(int numNodes, int nodeType) {
+	nodesInLayer.insert(nodesInLayer.end()-1, numNodes);
+	if (nodeType == SIGMOID) {
+		activationType.insert(activationType.end()-1, sigmoid);
+		activationTypePrime.insert(activationTypePrime.end()-1, sigmoidPrime);
+	}
+	else if (nodeType == RELU) {
+		activationType.insert(activationType.end()-1, relu);
+		activationTypePrime.insert(activationTypePrime.end()-1, reluPrime);
+	}
+	numLayers++;
+}
+
+void NNClass::init() {
+
+	nodeLayer.push_back(MatrixClass<double>(1, nodesInLayer[0]));
+	for (int i = 1; i < numLayers; i++) {
+		nodeLayer.push_back(MatrixClass<double>(1, nodesInLayer[i]));
+
+		//dJdB, dJdW, hLayer, weight, bias, dJdBc, dJdWc;
+		weight.push_back(MatrixClass<double>(nodesInLayer[i-1], nodesInLayer[i]));
+		dJdWc.push_back(MatrixClass<double>(nodesInLayer[i-1], nodesInLayer[i]));
+		dJdW.push_back(MatrixClass<double>(nodesInLayer[i-1], nodesInLayer[i]));
+
+		bias.push_back(MatrixClass<double>(1, nodesInLayer[i]));
+		dJdBc.push_back(MatrixClass<double>(1, nodesInLayer[i]));
+		dJdB.push_back(MatrixClass<double>(1, nodesInLayer[i]));
+		
+		weight[i-1] = weight[i-1].applyFunction(random);
+		dJdWc[i-1].clear();
+		dJdW[i-1].clear();
+
+		bias[i-1] = bias[i-1].applyFunction(random);
+		dJdBc[i-1].clear();
+		dJdB[i-1].clear();
+	}
+
+	prev_dJdBc = dJdBc;
+	prev_dJdWc = dJdWc;
 }
 
 double random(double x) {
@@ -110,6 +146,16 @@ double sigmoid(double x) {
 
 double sigmoidPrime(double x) {
 	return sigmoid(x)*(1 - sigmoid(x));
+}
+
+double relu(double x) {
+	if (x > 0) return x;
+	else return 0;
+}
+
+double reluPrime(double x) {
+	if (x > 0) return 1;
+	else return 0;
 }
 
 NNClass::~NNClass(){}

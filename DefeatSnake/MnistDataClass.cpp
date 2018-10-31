@@ -22,6 +22,7 @@ MnistDataClass::MnistDataClass(string dataFilename, string answerFilename) {
 	if (dataFile.good()) {
 		readHeader(dataFile);
 		
+		//numImages = 20;
 		//set vector size
 		inputData.resize(numImages);
 		

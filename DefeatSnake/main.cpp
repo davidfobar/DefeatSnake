@@ -6,9 +6,10 @@
 
 using namespace std;
 
-const double LEARNING_RATE = 0.7;
-const int MINI_BATCH_SIZE = 10;
-const int NUM_EPOCHS = 1;
+const double LEARNING_RATE = 2.5;
+const double MOMENTUM_FACTOR = 0.25;
+const int MINI_BATCH_SIZE = 50;
+const int NUM_EPOCHS = 2;
 
 int main(){
 	cout << "Loading MNIST database" << endl;
@@ -18,21 +19,25 @@ int main(){
 	MnistDataClass data("train-images.idx3-ubyte", "train-labels.idx1-ubyte");
 	MnistDataClass test("t10k-images.idx3-ubyte","t10k-labels.idx1-ubyte");
 	
-	int numLayers = 3;
-	int nodesPerLayer[] = {784,20,10};
 	cout << "Initiate Neural Network" << endl;
-	NNClass nn(numLayers, nodesPerLayer, LEARNING_RATE);
-	
+	NNClass nn(784, RELU, 10, SIGMOID);
+	nn.addHiddenLayer(40, RELU);
+	nn.addHiddenLayer(20, RELU);
+	nn.addHiddenLayer(16, RELU);
+	nn.setLearningRate(LEARNING_RATE);
+	nn.setMiniBatchSize(MINI_BATCH_SIZE);
+	nn.enableMomentum(MOMENTUM_FACTOR);
+	nn.init();
+
 	//training
 	for (int i = 0; i < NUM_EPOCHS; i++) {
-		int pctUpdate = 0;
 		for (int j = 0; j < data.getNumImages() / MINI_BATCH_SIZE; j++) {
 			for (int k = 0; k < MINI_BATCH_SIZE; k++) {
 				nn.compute(data.getPixelData(j*MINI_BATCH_SIZE + k));
 				nn.backPropogate(data.getImageNumber(j*MINI_BATCH_SIZE + k));
 			}
-			nn.updateWeightsAndBiases(MINI_BATCH_SIZE);
-			//cout << "Batch " << j << " of epoch " << i+1 << " complete" << endl;
+			nn.updateWeightsAndBiases();
+			cout << "Batch " << j << " of epoch " << i+1 << " complete" << endl;
 		}
 	}
 

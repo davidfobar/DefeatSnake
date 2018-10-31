@@ -30,6 +30,9 @@ public:
 	MatrixClass operator*(double const value);
 	MatrixClass operator+(MatrixClass const &m) const;
 	MatrixClass operator-(MatrixClass const &m) const;
+
+	int getHeight() { return height; }
+	int getWidth() { return width; }
 private:
 	std::vector< vector<T> > array;
 	int height;
