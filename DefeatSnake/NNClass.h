@@ -20,7 +20,6 @@ public:
 	NNClass(int numInputNodes, int inputNodeType, int numOutputNodes, int outputNodeType);
 	void addHiddenLayer(int numNodes, int nodeType);
 	void init();
-
 	int compute(vector<double> input);
 };
 
@@ -29,4 +28,3 @@ double sigmoid(double x);
 double sigmoidPrime(double x);
 double relu(double x);
 double reluPrime(double x);
-
