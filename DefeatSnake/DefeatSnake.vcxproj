@@ -126,11 +126,13 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MnistDataClass.cpp" />
     <ClCompile Include="NNClass.cpp" />
+    <ClCompile Include="NN_TrainerClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MatrixClass.h" />
     <ClInclude Include="MnistDataClass.h" />
     <ClInclude Include="NNClass.h" />
+    <ClInclude Include="NN_TrainerClass.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MatrixClass.inl" />

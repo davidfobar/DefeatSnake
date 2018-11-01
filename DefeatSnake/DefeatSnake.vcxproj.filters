@@ -24,6 +24,9 @@
     <ClCompile Include="NNClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="NN_TrainerClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MatrixClass.h">
@@ -33,6 +36,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NNClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NN_TrainerClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

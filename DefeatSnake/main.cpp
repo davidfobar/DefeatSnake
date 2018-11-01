@@ -1,15 +1,16 @@
 #include "MnistDataClass.h"
-#include "NNClass.h"
 #include <iostream>
 #include <time.h>
 #include <stdlib.h>
+#include "NNClass.h"
+#include "NN_TrainerClass.h"
 
 using namespace std;
 
 const double LEARNING_RATE = 2.5;
 const double MOMENTUM_FACTOR = 0.25;
 const int MINI_BATCH_SIZE = 50;
-const int NUM_EPOCHS = 2;
+const int NUM_EPOCHS = 1;
 
 int main(){
 	cout << "Loading MNIST database" << endl;
@@ -24,19 +25,22 @@ int main(){
 	nn.addHiddenLayer(40, RELU);
 	nn.addHiddenLayer(20, RELU);
 	nn.addHiddenLayer(16, RELU);
-	nn.setLearningRate(LEARNING_RATE);
-	nn.setMiniBatchSize(MINI_BATCH_SIZE);
-	nn.enableMomentum(MOMENTUM_FACTOR);
 	nn.init();
+
+	NN_TrainerClass trainer(nn);
+	trainer.setLearningRate(LEARNING_RATE);
+	trainer.setMiniBatchSize(MINI_BATCH_SIZE);
+	trainer.enableMomentum(MOMENTUM_FACTOR);
 
 	//training
 	for (int i = 0; i < NUM_EPOCHS; i++) {
 		for (int j = 0; j < data.getNumImages() / MINI_BATCH_SIZE; j++) {
 			for (int k = 0; k < MINI_BATCH_SIZE; k++) {
 				nn.compute(data.getPixelData(j*MINI_BATCH_SIZE + k));
-				nn.backPropogate(data.getImageNumber(j*MINI_BATCH_SIZE + k));
+
+				trainer.backPropogate(data.getImageNumber(j*MINI_BATCH_SIZE + k));
 			}
-			nn.updateWeightsAndBiases();
+			trainer.updateWeightsAndBiases();
 			cout << "Batch " << j << " of epoch " << i+1 << " complete" << endl;
 		}
 	}
