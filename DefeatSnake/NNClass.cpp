@@ -58,8 +58,8 @@ void NNClass::init() {
 		weight.push_back(MatrixClass<double>(nodesInLayer[i-1], nodesInLayer[i]));
 		bias.push_back(MatrixClass<double>(1, nodesInLayer[i]));
 
-		weight[i-1] = weight[i-1].applyFunction(random);
-		bias[i-1] = bias[i-1].applyFunction(random);
+		weight[i-1] = weight[i-1].applyFunction(random)*sqrt(2.0/ nodesInLayer[i-1]);
+        bias[i - 1].clear();
 	}
 }
 
